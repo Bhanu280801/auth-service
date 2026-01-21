@@ -1,6 +1,9 @@
 import User from '../models/User.js'
+import jwt from 'jsonwebtoken'
 
 import { generateAccessToken , generateRefreshToken, verifyRefreshToken } from '../services/token.service.js'
+
+import TokenBlacklist from '../models/TokenBlacklist.js'
 
 export const registerUser = async (req,res)=> {
     try {
@@ -15,6 +18,8 @@ export const registerUser = async (req,res)=> {
         }
 
         const existingUser = await User.findOne({email})
+        
+        console.log(existingUser);
 
         if(existingUser){
             return res.status(400).json({
@@ -72,6 +77,7 @@ export const loginUser =async(req,res)=>{
 
     //compare password
     const isMatch = await user.comparePassword(password)
+    console.log(isMatch)
 
     if(!isMatch){
         return res.status(400).json({
@@ -99,7 +105,7 @@ res.status(200).json({
  }
 }
 
-//
+
 export const refreshAccessToken =async (req, res)=>{
 
 try{
@@ -117,6 +123,7 @@ try{
 
     try {
       decode = verifyRefreshToken(refreshToken)
+      console.log(decode)
     } catch (error) {
         return res.status(401).json({
             success : false,
@@ -147,4 +154,81 @@ res.status(500).json({
 }
 
 }
+//Profile function
+export const profile = async(req,res,next)=>{
+      
+    try {
+    const user = await User.findById(req.user.id).select("-password")
 
+    if(!user){
+        return res.status(404).json({
+            success : false,
+            message:"User not found"
+
+        })
+    }
+
+    res.status(200).json({
+        user :{
+            name : user.name,
+            email : user.email,
+        }
+    })
+      } catch(error) {
+         console.error("Profile error :", error.message);
+         res.status(500).json({
+      success: false,
+      message: "Server error during fetching details ",
+    });
+      }
+}
+
+//logout function
+
+export const logoutUser = async(req ,res)=>{
+try{
+const authHeader = req.headers.authorization;
+
+if(!authHeader || !authHeader.startsWith("Bearer ")){
+
+    res.status(400).json({
+        success : false,
+        message: "No token provided"
+    })
+
+}
+const token = authHeader.split(" ")[1];
+
+const decoded = jwt.decode(token)
+
+if(!decoded || !decoded.exp){
+
+    return res.status(400).json({
+
+        success:false,
+        message :"Invalid or expired token"
+
+    })
+}
+
+    const expiresAt = new Date(decoded.exp *1000)
+
+    await TokenBlacklist.create({
+
+        token,
+        expiresAt
+    })
+    res.status(200).json({
+        success:false,
+        message : "Loged out sucessfully"
+    })
+}catch(error){
+
+console.error("Logout error " , error.message)
+
+res.status(500).json({
+    success : false,
+    message : "server error during logout"
+})
+}
+}

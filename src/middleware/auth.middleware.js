@@ -1,5 +1,7 @@
 import { verifyAccessToken } from "../services/token.service.js";
 
+import TokenBlacklist from "../models/TokenBlacklist.js";
+
 export const protect = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -13,10 +15,19 @@ export const protect = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
+    const blacklisted = await TokenBlacklist.findOne({token});
+
+    if(blacklisted){
+      return res.status(401).json({
+        success :false,
+        message :"Token has been Logged out"
+      })
+    }
+
     const decoded = verifyAccessToken(token);
 
     req.user = {
-      id: decoded.id,
+     id: decoded.id,
       role: decoded.role,
     };
 
@@ -29,3 +40,5 @@ export const protect = async (req, res, next) => {
     });
   }
 };
+
+

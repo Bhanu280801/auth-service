@@ -15,6 +15,7 @@ app.use(morgan('dev'))
 //Routes 
 app.use("/api/auth" , authRoutes)
 
+
 //Basic test route
 app.get('/ ',(req,res)=>{
     res.send("Auth microservice is running")
