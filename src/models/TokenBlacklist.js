@@ -15,8 +15,8 @@ expiresAt:{
 
 //Automatically delete expired tokens
 
-TokenBlacklistSchema.index({expiresAt :0 },{expireAfterSeconds : 1})
+TokenBlacklistSchema.index({expiresAt :1},{expireAfterSeconds : 0})
 
-const TokenBlacklist= mongoose.model("TokenBloaclist" , TokenBlacklistSchema)
+const TokenBlacklist= mongoose.model("TokenBlaclist" , TokenBlacklistSchema)
 
 export default TokenBlacklist
