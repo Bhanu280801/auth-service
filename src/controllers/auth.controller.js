@@ -3,6 +3,10 @@ import jwt from 'jsonwebtoken'
 
 import { generateAccessToken , generateRefreshToken, verifyRefreshToken } from '../services/token.service.js'
 
+import { generateOTP } from '../utils/generateOTP.js'
+
+import { sendEmail } from '../services/email.service.js'
+
 import TokenBlacklist from '../models/TokenBlacklist.js'
 
 export const registerUser = async (req,res)=> {
@@ -171,7 +175,7 @@ export const profile = async(req,res,next)=>{
     res.status(200).json({
         user :{
             name : user.name,
-            email : user.email,
+           email : user.email,
         }
     })
       } catch(error) {
@@ -191,7 +195,7 @@ const authHeader = req.headers.authorization;
 
 if(!authHeader || !authHeader.startsWith("Bearer ")){
 
-    res.status(400).json({
+   return res.status(400).json({
         success : false,
         message: "No token provided"
     })
@@ -219,7 +223,7 @@ if(!decoded || !decoded.exp){
         expiresAt
     })
     res.status(200).json({
-        success:false,
+        success:true,
         message : "Loged out sucessfully"
     })
 }catch(error){
@@ -231,4 +235,88 @@ res.status(500).json({
     message : "server error during logout"
 })
 }
+}
+
+//forgot password functionality
+
+export const forgetPassword = async(req , res)=>{
+    
+    const {email} = req.body;
+
+    const user = await User.findOne({email})
+
+    if(!user){
+        return res.status(400).json({
+            success : false,
+            message :"User not found"
+        })
+    }
+
+    const otp = generateOTP();
+    user.otp = otp;
+
+    user.otpExpires = Date.now() + 10*60*1000; // expires after 10 minutes
+
+    await user.save();
+
+    await sendEmail(
+        email,
+       "Password Reset OTP",
+       `Your OTP is ${otp}. It is valid for 10 minutes.`
+    )
+
+     res.status(200).json({
+     success: true,
+     message: "OTP sent to email",
+  });
+
+}
+
+// verify otp functionality
+
+export const verifyOTP = async (req, res)=>{
+    const {email , otp } =  req.body;
+
+    const user = await User.findOne({email})
+
+    if(!user || user.otp !== otp  || user.otpExpires < Date.now()){
+
+        return res.status(200).json({
+        success : false,
+        message :" Invalid or expired otp"
+
+        })
+    }
+
+    res.status(200).json({
+    success: true,
+    message: "OTP verified",
+  });
+
+}
+
+//Reset password functionality
+export const resetPassword = async(req,res)=>{
+
+    const {email , newPassword } = req.body;
+
+    const user = await User.findOne({email});
+
+    if(!user){
+        return res.status(400).json({
+            success : false,
+            message : "User not found "
+        })
+    }
+
+    user.password = newPassword;
+    user.otp = null;
+    user.otpExpires = null;
+    await user.save();
+
+    res.status(200).json({
+    success: true,
+    message: "Password reset successful",
+  });
+
 }
