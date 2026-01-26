@@ -227,3 +227,21 @@ Swagger UI
 Postman
 
 Thunder Client
+
+🏆 Resume Highlights
+
+This project demonstrates:
+
+Production-ready authentication microservice architecture
+
+Secure JWT access + refresh token implementation
+
+Token blacklisting logout mechanism
+
+Role-Based Access Control (RBAC)
+
+OTP-based password reset system
+
+Rate limiting for security hardening
+
+Swagger documentation and live deployment
