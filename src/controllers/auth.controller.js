@@ -55,7 +55,7 @@ export const registerUser = async (req,res)=> {
     }
 }
 
-export const loginUser =async(req,res)=>{
+export const loginUser =async(req,res,next)=>{
  try {
 
     const {email , password} = req.body;
@@ -102,7 +102,7 @@ res.status(200).json({
 }
 
 
-export const refreshAccessToken =async (req, res)=>{
+export const refreshAccessToken =async (req, res, next)=>{
 
 try{
     const {refreshToken} = req.body;
@@ -172,7 +172,7 @@ export const profile = async(req,res,next)=>{
 
 //logout function
 
-export const logoutUser = async(req ,res)=>{
+export const logoutUser = async(req ,res, next)=>{
 try{
 const authHeader = req.headers.authorization;
 
