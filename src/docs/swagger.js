@@ -24,9 +24,15 @@ const options = {
             description: "JWT Authentication & Authorization Microservice",
         },
          servers: [
-      {
-        url: "http://localhost:5000",
-      },
+             {
+    url: "http://localhost:5000",
+    description: "Local server",
+  },
+  {
+    url: "https://auth-microservice-5ki0.onrender.com",
+    description: "Production server",
+  },
+     
     ]
     },
     apis: ["./src/routes/*.js"], // Swagger will read routes
