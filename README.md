@@ -245,3 +245,6 @@ OTP-based password reset system
 Rate limiting for security hardening
 
 Swagger documentation and live deployment
+
+## 👨‍💻 Author
+Bhanu
