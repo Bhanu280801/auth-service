@@ -52,53 +52,76 @@ This project implements modern backend security practices such as:
 
 ## 📂 Folder Structure
 
+```bash
 src/
 │
 ├── config/
-│ └── db.js
+│   └── db.js
 │
 ├── models/
-│ ├── User.js
-│ └── TokenBlacklist.js
+│   ├── User.js
+│   └── TokenBlacklist.js
 │
 ├── routes/
-│ └── auth.routes.js
+│   └── auth.routes.js
 │
 ├── controllers/
-│ └── auth.controller.js
+│   └── auth.controller.js
 │
 ├── middleware/
-│ ├── auth.middleware.js
-│ ├── role.middleware.js
-│ ├── rateLimiter.js
-│ └── error.middleware.js
+│   ├── auth.middleware.js
+│   ├── role.middleware.js
+│   ├── rateLimiter.js
+│   └── error.middleware.js
 │
 ├── services/
-│ ├── token.service.js
-│ └── email.service.js
+│   ├── token.service.js
+│   └── email.service.js
 │
 ├── utils/
-│ └── generateOTP.js
+│   └── generateOTP.js
 │
 ├── docs/
-│ └── swagger.js
+│   └── swagger.js
 │
 ├── app.js
 └── server.js
 
-📡 API Endpoints
-Auth Routes
-Method	Endpoint	Description
-POST	/api/auth/register	Register new user
-POST	/api/auth/login	Login and get JWT tokens
-POST	/api/auth/refresh-token	Generate new access token
-POST	/api/auth/logout	Logout user (blacklist token)
-Password Reset Routes
-Method	Endpoint	Description
-POST	/api/auth/forgot-password	Send OTP to email
-POST	/api/auth/verify-otp	Verify OTP
-POST	/api/auth/reset-password	Reset password
-Protected Routes
-Method	Endpoint	Access
-GET	/api/auth/profile	Logged-in users
-GET	/api/auth/admin/dashboard	Admin only
+
+
+
+---
+
+
+```md
+## 📡 API Endpoints
+
+### Auth Routes
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | `/api/auth/register` | Register new user |
+| POST   | `/api/auth/login` | Login and get JWT tokens |
+| POST   | `/api/auth/refresh-token` | Generate new access token |
+| POST   | `/api/auth/logout` | Logout user (blacklist token) |
+
+---
+
+### Password Reset Routes
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | `/api/auth/forgot-password` | Send OTP to email |
+| POST   | `/api/auth/verify-otp` | Verify OTP |
+| POST   | `/api/auth/reset-password` | Reset password |
+
+---
+
+### Protected Routes
+
+| Method | Endpoint | Access |
+|--------|----------|--------|
+| GET    | `/api/auth/profile` | Logged-in users |
+| GET    | `/api/auth/admin/dashboard` | Admin only |
+
+
