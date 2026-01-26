@@ -51,11 +51,7 @@ export const registerUser = async (req,res)=> {
             }
         })
     } catch (error) {
-        console.error('Register error' , error.message)
-         res.status(500).json({
-            success: false,
-            message :'server error during registration'
-        })
+       next(error)
     }
 }
 
@@ -101,11 +97,7 @@ res.status(200).json({
 });
 
  } catch (error) {
-    console.error("Login Error:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Server error during login",
-    });
+   next(error)
  }
 }
 
@@ -148,12 +140,7 @@ try{
         accessToken : newAccessToken
     })
 }catch(error){
-console.error("Refresh Token Error:", error.message);
-
-res.status(500).json({
-      success: false,
-      message: "Server error while refreshing token",
-    });
+next(error)
 
 }
 
@@ -179,11 +166,7 @@ export const profile = async(req,res,next)=>{
         }
     })
       } catch(error) {
-         console.error("Profile error :", error.message);
-         res.status(500).json({
-      success: false,
-      message: "Server error during fetching details ",
-    });
+        next(error)
       }
 }
 
@@ -228,12 +211,7 @@ if(!decoded || !decoded.exp){
     })
 }catch(error){
 
-console.error("Logout error " , error.message)
-
-res.status(500).json({
-    success : false,
-    message : "server error during logout"
-})
+next(error)
 }
 }
 
