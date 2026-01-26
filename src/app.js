@@ -8,6 +8,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger.js'
 
 const app = express();
+app.set("trust proxy", 1);
 
 //Middleware
 app.use(express.json())
@@ -24,10 +25,12 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 //Routes 
 app.use("/api/auth" , authRoutes)
 
-app.use(errorHandler);
+
 //Basic test route
 app.get('/',(req,res)=>{
     res.send("Auth microservice is running")
 })
+
+app.use(errorHandler);
 
 export default app
