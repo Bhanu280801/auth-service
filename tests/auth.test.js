@@ -111,7 +111,7 @@ describe('Auth Endpoints', () => {
             });
 
         expect(res.statusCode).toEqual(200);
-        expect(res.body.message).toEqual('Loged out sucessfully');
+        expect(res.body.message).toEqual('Logged out successfully');
     });
 
     it('should not access profile after logout (token blacklisted)', async () => {
