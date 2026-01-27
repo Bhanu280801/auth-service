@@ -1,11 +1,12 @@
-import express  from "express";
+import express from "express";
 import cors from "cors"
-import helmet  from "helmet";
+import helmet from "helmet";
 import morgan from "morgan";
-import authRoutes from './routes/authRoutes.js'
-import { errorHandler } from "./middleware/errormiddleware.js";
+import authRoutes from './routes/auth.routes.js'
+import { errorHandler } from "./middleware/error.middleware.js";
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger.js'
+import passport from './config/passport.setup.js';
 
 const app = express();
 app.set("trust proxy", 1);
@@ -15,6 +16,7 @@ app.use(express.json())
 app.use(cors())
 app.use(helmet())
 app.use(morgan('dev'))
+app.use(passport.initialize());
 
 
 // Swagger Docs Route
@@ -23,11 +25,11 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 //Routes 
-app.use("/api/auth" , authRoutes)
+app.use("/api/auth", authRoutes)
 
 
 //Basic test route
-app.get('/',(req,res)=>{
+app.get('/', (req, res) => {
     res.send("Auth microservice is running")
 })
 

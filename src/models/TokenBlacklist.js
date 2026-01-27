@@ -1,22 +1,22 @@
 import mongoose from 'mongoose'
 
 const TokenBlacklistSchema = new mongoose.Schema({
-token:{
-    type: String,
-    unique:true,
-    required : true
-},
-expiresAt:{
-    type:Date,
-    required : true,
-},
+    token: {
+        type: String,
+        unique: true,
+        required: true
+    },
+    expiresAt: {
+        type: Date,
+        required: true,
+    },
 
-},{timestamps : true})
+}, { timestamps: true })
 
 //Automatically delete expired tokens
 
-TokenBlacklistSchema.index({expiresAt :1},{expireAfterSeconds : 0})
+TokenBlacklistSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 })
 
-const TokenBlacklist= mongoose.model("TokenBlaclist" , TokenBlacklistSchema)
+const TokenBlacklist = mongoose.model("TokenBlacklist", TokenBlacklistSchema)
 
 export default TokenBlacklist
