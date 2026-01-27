@@ -8,17 +8,26 @@
 
 import express from 'express'
 
-import { loginUser, registerUser, refreshAccessToken, logoutUser, verifyEmail, changePassword } from '../controllers/auth.controller.js'
+import {
+  loginUser,
+  registerUser,
+  refreshAccessToken,
+  logoutUser,
+  verifyEmail,
+  changePassword,
+  profile,
+  forgetPassword,
+  verifyOTP,
+  resetPassword
+} from '../controllers/auth.controller.js'
 import { setup2FA, verify2FA, disable2FA } from '../controllers/twoFactor.controller.js';
 import passport from 'passport';
 import { generateAccessToken, generateRefreshToken } from '../services/token.service.js';
 import RefreshToken from '../models/RefreshToken.js';
 import { protect } from '../middleware/auth.middleware.js';
-import { profile } from '../controllers/auth.controller.js'
 import { authorizeRoles } from '../middleware/role.middleware.js';
 import { Roles } from '../constants/roles.js';
 import { loginRateLimitter } from '../middleware/rateLimiter.js';
-import { forgetPassword, verifyOTP, resetPassword } from '../controllers/auth.controller.js';
 import { validate } from '../middleware/validate.middleware.js';
 import {
   verifyEmailSchema,
