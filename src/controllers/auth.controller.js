@@ -53,7 +53,7 @@ export const registerUser = async (req, res) => {
         //sending response and it doesn't contain password
         res.status(201).json({
             success: true,
-            message: 'User registered sucessfully. Please verify your email.',
+            message: 'User registered successfully. Please verify your email.',
             user: {
                 id: user._id,
                 name: user.name,
@@ -139,7 +139,7 @@ export const loginUser = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Login Sucessful",
+            message: "Login Successful",
             accessToken,
             refreshToken,
         });
@@ -281,7 +281,7 @@ export const logoutUser = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Loged out sucessfully"
+            message: "Logged out successfully"
         })
     } catch (error) {
 
