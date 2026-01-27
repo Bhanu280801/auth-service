@@ -10,7 +10,7 @@ import { sendEmail } from '../services/email.service.js'
 import TokenBlacklist from '../models/TokenBlacklist.js'
 import RefreshToken from '../models/RefreshToken.js'
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
     try {
         const { name, email, password } = req.body
 
@@ -291,60 +291,65 @@ export const logoutUser = async (req, res, next) => {
 
 //forgot password functionality
 
-export const forgetPassword = async (req, res) => {
+export const forgetPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
 
-    const { email } = req.body;
+        const user = await User.findOne({ email })
 
-    const user = await User.findOne({ email })
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "User not found"
+            })
+        }
 
-    if (!user) {
-        return res.status(400).json({
-            success: false,
-            message: "User not found"
-        })
+        const otp = generateOTP();
+        user.otp = otp;
+
+        user.otpExpires = Date.now() + 10 * 60 * 1000; // expires after 10 minutes
+
+        await user.save();
+
+        await sendEmail(
+            email,
+            "Password Reset OTP",
+            `Your OTP is ${otp}. It is valid for 10 minutes.`
+        )
+
+        res.status(200).json({
+            success: true,
+            message: "OTP sent to email",
+        });
+    } catch (error) {
+        next(error)
     }
-
-    const otp = generateOTP();
-    user.otp = otp;
-
-    user.otpExpires = Date.now() + 10 * 60 * 1000; // expires after 10 minutes
-
-    await user.save();
-
-    await sendEmail(
-        email,
-        "Password Reset OTP",
-        `Your OTP is ${otp}. It is valid for 10 minutes.`
-    )
-
-    res.status(200).json({
-        success: true,
-        message: "OTP sent to email",
-    });
-
 }
 
 // verify otp functionality
 
-export const verifyOTP = async (req, res) => {
-    const { email, otp } = req.body;
+export const verifyOTP = async (req, res, next) => {
+    try {
+        const { email, otp } = req.body;
 
-    const user = await User.findOne({ email })
+        const user = await User.findOne({ email })
 
-    if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
+        if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
 
-        return res.status(200).json({
-            success: false,
-            message: " Invalid or expired otp"
+            return res.status(200).json({
+                success: false,
+                message: " Invalid or expired otp"
 
-        })
+            })
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "OTP verified",
+        });
+    } catch (error) {
+        next(error)
     }
-
-    res.status(200).json({
-        success: true,
-        message: "OTP verified",
-    });
-
 }
 
 export const verifyEmail = async (req, res, next) => {
@@ -389,29 +394,31 @@ export const verifyEmail = async (req, res, next) => {
 }
 
 //Reset password functionality
-export const resetPassword = async (req, res) => {
+export const resetPassword = async (req, res, next) => {
+    try {
+        const { email, newPassword } = req.body;
 
-    const { email, newPassword } = req.body;
+        const user = await User.findOne({ email });
 
-    const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "User not found "
+            })
+        }
 
-    if (!user) {
-        return res.status(400).json({
-            success: false,
-            message: "User not found "
-        })
+        user.password = newPassword;
+        user.otp = null;
+        user.otpExpires = null;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Password reset successful",
+        });
+    } catch (error) {
+        next(error)
     }
-
-    user.password = newPassword;
-    user.otp = null;
-    user.otpExpires = null;
-    await user.save();
-
-    res.status(200).json({
-        success: true,
-        message: "Password reset successful",
-    });
-
 }
 
 export const changePassword = async (req, res, next) => {
