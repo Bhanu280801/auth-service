@@ -32,12 +32,13 @@ export function VerifyEmailForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams.get('email') || '';
+  const otpParam = searchParams.get('otp') || '';
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: emailParam,
-      otp: '',
+      otp: otpParam,
     },
   });
 
@@ -58,7 +59,7 @@ export function VerifyEmailForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="email"
@@ -85,6 +86,11 @@ export function VerifyEmailForm() {
             </FormItem>
           )}
         />
+        {otpParam && (
+          <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            Local dev code prefilled: {otpParam}
+          </p>
+        )}
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Verify Email

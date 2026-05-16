@@ -49,12 +49,17 @@ export function RegisterForm() {
   const { mutate, isPending } = useMutation({
     mutationFn: authService.register,
     onSuccess: (data: RegisterResponse) => {
+      const email = form.getValues('email');
+      const verifyUrl = data.devVerificationCode
+        ? `/verify-email?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(data.devVerificationCode)}`
+        : `/verify-email?email=${encodeURIComponent(email)}`;
+
       toast.success(
         data.devVerificationCode
           ? `Registration successful. Dev verification code: ${data.devVerificationCode}`
           : 'Registration successful. Please verify your email.'
       );
-      router.push(`/verify-email?email=${encodeURIComponent(form.getValues('email'))}`);
+      router.push(verifyUrl);
     },
     onError: (error: unknown) => {
       toast.error(getAuthErrorMessage(error, 'Registration failed'));
@@ -67,7 +72,7 @@ export function RegisterForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="name"
