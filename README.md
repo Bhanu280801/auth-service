@@ -1,175 +1,262 @@
-# 🔐 Enterprise-Grade Authentication Microservice
+# Auth Service
 
-![Node.js](https://img.shields.io/badge/Node.js-18.x-green?style=for-the-badge&logo=node.js)
-![Express](https://img.shields.io/badge/Express-5.x-lightgrey?style=for-the-badge&logo=express)
-![MongoDB](https://img.shields.io/badge/MongoDB-6.x-green?style=for-the-badge&logo=mongodb)
-![Docker](https://img.shields.io/badge/Docker-Ready-blue?style=for-the-badge&logo=docker)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://auth-microservice-5ki0.onrender.com/api-docs/)
+A full-stack authentication and access-control project with an Express/MongoDB backend and a Next.js frontend dashboard.
 
-> **A production-ready, secure, and scalable Identity & Access Management (IAM) system designed for modern microservice architectures.**
+Live API docs:
 
----
-
-## 🚀 Project Overview
-
-This is not just another login system. It is a **robust Identity & Access Management (IAM) service** built to handle the complex security requirements of enterprise applications. 
-
-It implements **industry-standard security protocols** to prevent common vulnerabilities (OWASP Top 10), featuring stateful token management, role-based access control (RBAC), and multi-factor authentication.
-
-**Why this project?**  
-To demonstrate mastery of backend security, distributed sessions, and clean, modular architecture.
-
----
-
-## 🏗️ System Architecture & Design Pattern
-
-This project follows a **Layered MVC (Model-View-Controller) Architecture** to ensure separation of concerns, scalability, and maintainability.
-
-### 🧩 Architectural Layers
-1.  **Interface Layer (Routes)**: Defines the API endpoints (RESTful standards) and delegates requests.
-2.  **Validation Layer (Middleware)**: Uses **Joi** schemas to validate all incoming data *before* it limits resources or reaches the controller.
-3.  **Controller Layer**: Handles HTTP requests/responses, parses inputs, and calls services.
-4.  **Service/Logic Layer**: Contains reusable business logic (Token generation, Email dispatching).
-5.  **Data Access Layer (Models)**: Mongoose schemas defining data structure, validation, and DB interactions.
-
-### 📐 Database Schema Design
-The data model is normalized to separate identity from session management:
-- **User**: Stores profile, hashed password (`bcrypt`), role (`user`/`admin`), and 2FA secrets.
-- **RefreshToken**: Stores active refresh tokens with a reference to the User. *Critical for Rotation logic.*
-- **TokenBlacklist**: Stores invalidated Access Tokens with TTL (Time To Live) to enforce immediate logout.
-
----
-
-## ⚙️ Detailed Working & Security Workflows
-
-### 1. 🔄 The "Stateful" Token Rotation (Anti-Theft)
-Most JWT implementations are stateless, which makes revoking them impossible without expiration. This project uses a **Hybrid Approach**:
-- **Access Token (15m)**: Stateless JWT. Fast verification, carries user Role.
-- **Refresh Token (7d)**: **Stateful**, stored in MongoDB.
-- **Rotation Logic**:
-    1.  Client presents `RefreshToken A`.
-    2.  Server verifies `A` (signature & database existence).
-    3.  Server **deletes** `A` and issues `RefreshToken B`.
-    4.  **Security Trigger**: If `RefreshToken A` is used *again* (e.g., by a hacker who stole it), the server detects it doesn't exist (it was already rotated). It then **invalidates ALL tokens** for that user, forcing a re-login.
-
-### 2. 🔐 Two-Factor Authentication (TOTP)
-Implemented using `speakeasy` (RFC 6238 Standard).
-- **Setup**: Generates a `base32` secret -> converts to `otpauth://` URL -> Generates QR Code.
-- **Enforcement**:
-    - Normal Login checks password.
-    - If `isTwoFactorEnabled` is true in DB, server returns `{ require2FA: true }` instead of tokens.
-    - Client must send a second request with the TOTP code to finalize login and receive tokens.
-
-### 3. 🛡️ Role-Based Access Control (RBAC)
-Custom middleware (`role.middleware.js`) protects sensitive routes.
-- **Flow**: `verifyAccessToken` middleware extracts `user.role` from JWT payload -> `authorizeRoles('admin')` checks if the role is allowed.
-- **Benefit**: Zero database hits for authorization checks (stateless verification for speed).
-
----
-
-## 📂 Project Structure
-
-```bash
-src/
-├── config/         # Passport strategies, DB connection, Env setup
-├── controllers/    # API Request Handlers (Auth, 2FA)
-├── constants/      # Static enumerations (Roles)
-├── docs/           # Swagger/OpenAPI specifications
-├── middleware/     # Auth checks, Role checks, Rate Limiting, Validation
-├── models/         # Database Schemas (User, RefreshToken, Blacklist)
-├── routes/         # API Route definitions
-├── services/       # Business Logic (Email, Token helpers)
-├── utils/          # Helper functions (Joi Schemas, Logger)
-└── server.js       # Application Entry Point
+```text
+https://auth-microservice-5ki0.onrender.com/api-docs/
 ```
 
----
+## Features
 
-## 💎 Key Features & Technical Highlights
+- User registration and email OTP verification
+- Login with JWT access and refresh tokens
+- Refresh-token rotation stored in MongoDB
+- Logout with access-token blacklist
+- Password reset with OTP verification
+- Password change for authenticated users
+- Two-factor authentication with authenticator apps
+- Google OAuth login
+- Role-based admin route protection
+- Swagger API documentation
+- Next.js frontend with login, register, dashboard, profile, forgot password, email verification, and 2FA flows
 
-### 🛡️ Advanced Security
-- **Device-Agnostic Logout**: Implementation of a **Token Blacklist** to securely invalidate JWTs before their expiration.
-- **Security Headers**: Uses `Helmet.js` to set secure HTTP headers (XSS protection, no-sniff, etc.).
-- **Rate Limiting**: Custom middleware to prevent Brute Force and DDoS attacks on auth endpoints.
+## Tech Stack
 
-### 🔌 Developer Experience
-- **Swagger/OpenAPI Documentation**: Interactive API playground available at `/api-docs`.
-- **Automated Testing**: Comprehensive integration tests using **Jest** and **Supertest**.
+Backend:
 
----
+- Node.js
+- Express
+- MongoDB and Mongoose
+- JWT
+- Passport Google OAuth
+- Speakeasy and QRCode for 2FA
+- Joi validation
+- Jest and Supertest
 
-## 🛠️ Tech Stack
+Frontend:
 
-| Component | Technology | Description |
-|-----------|------------|-------------|
-| **Runtime** | Node.js | v18+ ESM Architecture |
-| **Framework** | Express.js | v5 (Beta) for modern routing |
-| **Database** | MongoDB | Mongoose ODM for flexible schemas |
-| **Auth** | JWT | Access (Stateless) + Refresh (Stateful) |
-| **OAuth** | Passport.js | Google Social Login strategy |
-| **2FA** | Speakeasy | TOTP generation and validation |
-| **Validation** | Joi | Runtime request body validation |
-| **Testing** | Jest | End-to-end integration testing |
+- Next.js
+- React
+- TypeScript
+- TanStack Query
+- Zustand
+- Axios
+- Tailwind CSS
+- shadcn/base-ui components
 
----
+## Project Structure
 
-## 🚦 Getting Started
+```text
+auth-service/
+  src/
+    app.js
+    server.js
+    config/
+    controllers/
+    middleware/
+    models/
+    routes/
+    services/
+    utils/
+    docs/
+  tests/
+  frontend/
+    app/
+    components/
+    lib/
+    services/
+    store/
+```
 
-### Prerequisites
-- Node.js (v18+)
-- MongoDB (Local or Atlas)
-- Docker (Optional)
+## Backend Setup
 
-### Option A: 🐳 Docker (Recommended)
-Passively spin up the entire stack with a single command.
+Install backend dependencies from the project root:
 
 ```bash
-# Start the services
-docker-compose up --build
+npm install
 ```
-The API is now running at `http://localhost:5000`.
 
-### Option B: Local Development
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+Create a root `.env` file:
 
-2. **Configure Environment**
-   Create a `.env` file in the root directory:
-   ```env
-   PORT=5000
-   MONGO_URI=your_mongo_url
-   JWT_ACCESS_SECRET=super_secret_key
-   JWT_REFRESH_SECRET=another_super_secret_key
-   GOOGLE_CLIENT_ID=your_google_id
-   GOOGLE_CLIENT_SECRET=your_google_secret
-   ```
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_ACCESS_SECRET=your_access_token_secret
+JWT_REFRESH_SECRET=your_refresh_token_secret
+EMAIL_USER=your_email_address
+EMAIL_PASS=your_email_app_password
+GOOGLE_CLIENT_ID=your_google_oauth_client_id
+GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
+```
 
-3. **Run the Server**
-   ```bash
-   npm run dev
-   ```
+Start the backend:
 
-4. **Run Tests**
-   ```bash
-   npm test
-   ```
+```bash
+npm run dev
+```
 
----
+Backend local URL:
 
-## 📚 API Documentation
+```text
+http://localhost:5000
+```
 
-Once the server is running, visit the interactive Swagger documentation:
+Swagger docs:
 
-👉 **[Live API Documentation](https://auth-microservice-5ki0.onrender.com/api-docs/)**
+```text
+http://localhost:5000/api-docs
+```
 
----
+Run backend tests:
 
-## 👨‍💻 Author
+```bash
+npm test
+```
 
-**Bhanu Prakash**  
-*Full Stack Developer | Backend Specialist*
+## Frontend Setup
 
+Install frontend dependencies:
 
+```bash
+cd frontend
+npm install
+```
+
+Create `frontend/.env` for local development:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
+
+Start the frontend:
+
+```bash
+npm run dev
+```
+
+Frontend local URL:
+
+```text
+http://localhost:3000
+```
+
+Build the frontend:
+
+```bash
+npm run build
+```
+
+The frontend build uses webpack mode because it is more reliable on Windows/OneDrive than Turbopack for this project.
+
+## Deployment
+
+### Backend
+
+The backend is deployed on Render:
+
+```text
+https://auth-microservice-5ki0.onrender.com
+```
+
+Set the same backend environment variables in your Render dashboard:
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_ACCESS_SECRET=your_access_token_secret
+JWT_REFRESH_SECRET=your_refresh_token_secret
+EMAIL_USER=your_email_address
+EMAIL_PASS=your_email_app_password
+GOOGLE_CLIENT_ID=your_google_oauth_client_id
+GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
+```
+
+### Frontend
+
+Deploy the frontend on Vercel with these settings:
+
+```text
+Framework Preset: Next.js
+Root Directory: frontend
+Build Command: npm run build
+Output Directory: leave empty
+Install Command: npm install
+```
+
+Set this Vercel environment variable:
+
+```env
+NEXT_PUBLIC_API_URL=https://auth-microservice-5ki0.onrender.com/api
+```
+
+Do not use `localhost` in Vercel.
+
+## Important Environment Notes
+
+Local frontend:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
+
+Vercel frontend:
+
+```env
+NEXT_PUBLIC_API_URL=https://auth-microservice-5ki0.onrender.com/api
+```
+
+These use the same key but different values because local and deployed environments point to different backend URLs.
+
+## Main API Routes
+
+```text
+POST /api/auth/register
+POST /api/auth/verify-email
+POST /api/auth/login
+POST /api/auth/refresh-token
+GET  /api/auth/profile
+POST /api/auth/logout
+POST /api/auth/change-password
+POST /api/auth/forgot-password
+POST /api/auth/verify-otp
+POST /api/auth/reset-password
+POST /api/auth/2fa/setup
+POST /api/auth/2fa/verify
+POST /api/auth/2fa/disable
+GET  /api/auth/google
+GET  /api/auth/google/callback
+GET  /api/auth/admin/dashboard
+```
+
+## 2FA Login Flow
+
+1. User logs in with email and password.
+2. If 2FA is enabled, backend responds with `require2FA: true`.
+3. Frontend displays an authenticator-code field.
+4. User enters the 6-digit code from their authenticator app.
+5. Backend verifies the code and returns tokens.
+
+## Useful Commands
+
+Backend:
+
+```bash
+npm run dev
+npm test
+npm start
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm run dev
+npm run build
+npm run lint
+```
+
+## Author
+
+Bhanu Prakash
