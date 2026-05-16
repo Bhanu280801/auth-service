@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { authService, getAuthErrorMessage } from '@/services/auth.service';
+import { authService, getAuthErrorMessage, isTwoFactorRequiredError } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
@@ -26,6 +26,7 @@ import { Loader2 } from 'lucide-react';
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
+  totp: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -33,12 +34,14 @@ type FormValues = z.infer<typeof formSchema>;
 export function LoginForm() {
   const router = useRouter();
   const { setAuthenticated, setUser } = useAuthStore();
+  const [requiresTwoFactor, setRequiresTwoFactor] = React.useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
       password: '',
+      totp: '',
     },
   });
 
@@ -61,12 +64,30 @@ export function LoginForm() {
       router.push('/dashboard');
     },
     onError: (error: unknown) => {
+      if (isTwoFactorRequiredError(error)) {
+        setRequiresTwoFactor(true);
+        toast.message('Enter your authenticator code to continue');
+        return;
+      }
+
       toast.error(getAuthErrorMessage(error, 'Login failed'));
     },
   });
 
   function onSubmit(values: FormValues) {
-    mutate(values);
+    if (requiresTwoFactor && !values.totp) {
+      form.setError('totp', {
+        type: 'manual',
+        message: 'Enter your 6-digit authenticator code',
+      });
+      return;
+    }
+
+    mutate({
+      email: values.email,
+      password: values.password,
+      ...(requiresTwoFactor ? { totp: values.totp } : {}),
+    });
   }
 
   return (
@@ -98,9 +119,30 @@ export function LoginForm() {
             </FormItem>
           )}
         />
+        {requiresTwoFactor && (
+          <FormField
+            control={form.control}
+            name="totp"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Authenticator Code</FormLabel>
+                <FormControl>
+                  <Input
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="123456"
+                    autoComplete="one-time-code"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Sign In
+          {requiresTwoFactor ? 'Verify & Sign In' : 'Sign In'}
         </Button>
       </form>
     </Form>

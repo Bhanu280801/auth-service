@@ -12,6 +12,7 @@ export interface User {
 
 interface ApiErrorBody {
   message?: string;
+  require2FA?: boolean;
 }
 
 interface RegisterPayload {
@@ -49,6 +50,11 @@ interface ProfileResponse {
 export const getAuthErrorMessage = (error: unknown, fallback: string) => {
   const axiosError = error as AxiosError<ApiErrorBody>;
   return axiosError.response?.data?.message || fallback;
+};
+
+export const isTwoFactorRequiredError = (error: unknown) => {
+  const axiosError = error as AxiosError<ApiErrorBody>;
+  return axiosError.response?.data?.require2FA === true;
 };
 
 export const authService = {
