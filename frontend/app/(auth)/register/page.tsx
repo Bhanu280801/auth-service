@@ -1,0 +1,27 @@
+import { RegisterForm } from '@/components/forms/RegisterForm';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
+
+export default function RegisterPage() {
+  return (
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold tracking-tight">Create an account</CardTitle>
+          <CardDescription>
+            Enter your details below to create your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <RegisterForm />
+          <div className="text-sm text-center text-muted-foreground">
+            Already have an account?{' '}
+            <Link href="/login" className="hover:text-primary underline underline-offset-4">
+              Sign in
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
