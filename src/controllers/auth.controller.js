@@ -44,16 +44,31 @@ export const registerUser = async (req, res, next) => {
             verificationTokenExpires
         })
 
-        await sendEmail(
-            email,
-            "Verify your email",
-            `Your verification code is ${verificationToken}`
-        )
+        let devVerificationCode;
+
+        try {
+            await sendEmail(
+                email,
+                "Verify your email",
+                `Your verification code is ${verificationToken}`
+            )
+        } catch (emailError) {
+            const requireEmailDelivery = process.env.NODE_ENV === 'production' || process.env.EMAIL_DELIVERY_REQUIRED === 'true';
+
+            if (requireEmailDelivery) {
+                await user.deleteOne();
+                throw emailError;
+            }
+
+            console.warn("Email delivery failed in development:", emailError.message);
+            devVerificationCode = verificationToken;
+        }
 
         //sending response and it doesn't contain password
         res.status(201).json({
             success: true,
             message: 'User registered successfully. Please verify your email.',
+            ...(devVerificationCode && { devVerificationCode }),
             user: {
                 id: user._id,
                 name: user.name,

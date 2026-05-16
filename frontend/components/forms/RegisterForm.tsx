@@ -30,6 +30,10 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+interface RegisterResponse {
+  devVerificationCode?: string;
+}
+
 export function RegisterForm() {
   const router = useRouter();
 
@@ -44,8 +48,12 @@ export function RegisterForm() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: authService.register,
-    onSuccess: () => {
-      toast.success('Registration successful. Please verify your email.');
+    onSuccess: (data: RegisterResponse) => {
+      toast.success(
+        data.devVerificationCode
+          ? `Registration successful. Dev verification code: ${data.devVerificationCode}`
+          : 'Registration successful. Please verify your email.'
+      );
       router.push(`/verify-email?email=${encodeURIComponent(form.getValues('email'))}`);
     },
     onError: (error: unknown) => {

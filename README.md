@@ -348,7 +348,7 @@ npm install
 Create `frontend/.env` for local development:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+API_PROXY_URL=http://localhost:5000/api
 ```
 
 Start the frontend:
@@ -362,6 +362,20 @@ Frontend local URL:
 ```text
 http://localhost:3000
 ```
+
+To test from another device on the same Wi-Fi network, start the frontend in LAN mode:
+
+```bash
+npm run dev:lan
+```
+
+Then open the frontend with your computer's Wi-Fi IP address, for example:
+
+```text
+http://192.168.0.213:3000
+```
+
+The browser will call `/api` on the same frontend origin, and Next.js will proxy those requests to `API_PROXY_URL`.
 
 Build the frontend:
 
@@ -428,7 +442,7 @@ Install Command: npm install
 Set this Vercel environment variable:
 
 ```env
-NEXT_PUBLIC_API_URL=https://auth-microservice-5ki0.onrender.com/api
+API_PROXY_URL=https://auth-microservice-5ki0.onrender.com/api
 ```
 
 Do not use `localhost` in Vercel.
@@ -438,13 +452,13 @@ Do not use `localhost` in Vercel.
 Local frontend:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+API_PROXY_URL=http://localhost:5000/api
 ```
 
 Vercel frontend:
 
 ```env
-NEXT_PUBLIC_API_URL=https://auth-microservice-5ki0.onrender.com/api
+API_PROXY_URL=https://auth-microservice-5ki0.onrender.com/api
 ```
 
 Same key, different value. Local points to your local backend. Vercel points to the deployed backend.
