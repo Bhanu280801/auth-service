@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/services/auth.service';
+import { authService, getAuthErrorMessage } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
@@ -52,7 +52,7 @@ export function LoginForm() {
       // Fetch user profile right after login
       try {
         const profileData = await authService.getProfile();
-        setUser(profileData.data);
+        setUser(profileData.user);
       } catch (err) {
         console.error('Failed to fetch profile', err);
       }
@@ -60,8 +60,8 @@ export function LoginForm() {
       toast.success('Logged in successfully');
       router.push('/dashboard');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Login failed');
+    onError: (error: unknown) => {
+      toast.error(getAuthErrorMessage(error, 'Login failed'));
     },
   });
 

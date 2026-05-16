@@ -1,103 +1,125 @@
 'use client';
 
+import Link from 'next/link';
+import { Activity, CheckCircle2, KeyRound, MailCheck, ShieldCheck, UserCog } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Activity, CreditCard, DollarSign, Users } from 'lucide-react';
+
+const securityItems = [
+  {
+    title: 'Email verification',
+    description: 'Required before sensitive account actions.',
+    icon: MailCheck,
+  },
+  {
+    title: 'Password protection',
+    description: 'Update your password from account settings.',
+    icon: KeyRound,
+  },
+  {
+    title: 'Two-factor login',
+    description: 'Add a time-based code for stronger sign in.',
+    icon: ShieldCheck,
+  },
+];
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
 
+  const accountChecks = [
+    {
+      label: 'Email verified',
+      value: user?.isVerified ? 'Enabled' : 'Pending',
+      active: !!user?.isVerified,
+    },
+    {
+      label: 'Two-factor authentication',
+      value: user?.isTwoFactorEnabled ? 'Enabled' : 'Not enabled',
+      active: !!user?.isTwoFactorEnabled,
+    },
+    {
+      label: 'Role',
+      value: user?.role || 'user',
+      active: true,
+    },
+  ];
+
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <div className="flex items-center space-x-2">
-          <Link href="/profile">
-            <Button>Edit Profile</Button>
-          </Link>
+    <main className="mx-auto w-full max-w-6xl space-y-6 p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-normal sm:text-3xl">
+            Welcome back, {user?.name || 'User'}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Review your account access, security status, and recent authentication activity.
+          </p>
         </div>
+        <Link href="/profile">
+          <Button>
+            <UserCog className="mr-2 h-4 w-4" />
+            Account Settings
+          </Button>
+        </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
-            <p className="text-xs text-muted-foreground">+20.1% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Subscriptions</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+2350</div>
-            <p className="text-xs text-muted-foreground">+180.1% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sales</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+12,234</div>
-            <p className="text-xs text-muted-foreground">+19% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Now</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+573</div>
-            <p className="text-xs text-muted-foreground">+201 since last hour</p>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 md:grid-cols-3">
+        {accountChecks.map((item) => (
+          <Card key={item.label}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{item.label}</CardTitle>
+              <CheckCircle2 className={item.active ? 'h-4 w-4 text-emerald-600' : 'h-4 w-4 text-muted-foreground'} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold capitalize">{item.value}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4">
-        <Card className="col-span-4">
+      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+        <Card>
           <CardHeader>
-            <CardTitle>Welcome back, {user?.name}</CardTitle>
-            <CardDescription>
-              Your account status is currently active.
-            </CardDescription>
+            <CardTitle>Security Checklist</CardTitle>
+            <CardDescription>Keep these controls in good shape for a safer account.</CardDescription>
           </CardHeader>
-          <CardContent className="pl-2">
-            <div className="h-[200px] flex items-center justify-center border-2 border-dashed border-muted rounded-md m-4">
-              <span className="text-muted-foreground">Chart Placeholder</span>
-            </div>
+          <CardContent className="grid gap-4 md:grid-cols-3">
+            {securityItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div key={item.title} className="rounded-md border p-4">
+                  <Icon className="mb-3 h-5 w-5 text-primary" />
+                  <h2 className="text-sm font-medium">{item.title}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
-        <Card className="col-span-3">
+
+        <Card>
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              You had 5 logins this month.
-            </CardDescription>
+            <CardDescription>Your latest known auth event.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-8">
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">Logged in via Web</p>
-                  <p className="text-sm text-muted-foreground">
-                    Just now
-                  </p>
-                </div>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-1 rounded-md bg-primary/10 p-2 text-primary">
+                <Activity className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Signed in to this dashboard</p>
+                <p className="text-sm text-muted-foreground">Current session</p>
               </div>
             </div>
+            <Link href="/profile">
+              <Button variant="outline" className="w-full">Manage Security</Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </main>
   );
 }

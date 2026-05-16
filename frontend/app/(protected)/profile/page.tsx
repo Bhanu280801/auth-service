@@ -45,7 +45,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Email Verified</p>
-                <p className="text-lg font-medium">{user?.isEmailVerified ? 'Yes' : 'No'}</p>
+                <p className="text-lg font-medium">{user?.isVerified ? 'Yes' : 'No'}</p>
               </div>
             </div>
           </CardContent>

@@ -25,8 +25,8 @@ export default function ProtectedLayout({
   });
 
   useEffect(() => {
-    if (data?.data) {
-      setUser(data.data);
+    if (data?.user) {
+      setUser(data.user);
       setAuthenticated(true);
     }
   }, [data, setUser, setAuthenticated]);

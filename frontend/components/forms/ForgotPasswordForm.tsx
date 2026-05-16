@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/services/auth.service';
+import { authService, getAuthErrorMessage } from '@/services/auth.service';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
@@ -30,7 +30,6 @@ export function ForgotPasswordForm() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
 
   const emailForm = useForm<z.infer<typeof emailSchema>>({ resolver: zodResolver(emailSchema) });
   const otpForm = useForm<z.infer<typeof otpSchema>>({ resolver: zodResolver(otpSchema) });
@@ -43,17 +42,16 @@ export function ForgotPasswordForm() {
       setStep(2);
       toast.success('OTP sent to your email');
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to send OTP')
+    onError: (err: unknown) => toast.error(getAuthErrorMessage(err, 'Failed to send OTP'))
   });
 
   const verifyMutation = useMutation({
     mutationFn: authService.verifyOTP,
-    onSuccess: (_, variables) => {
-      setOtp(variables.otp);
+    onSuccess: () => {
       setStep(3);
       toast.success('OTP verified');
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || 'Invalid OTP')
+    onError: (err: unknown) => toast.error(getAuthErrorMessage(err, 'Invalid OTP'))
   });
 
   const resetMutation = useMutation({
@@ -62,7 +60,7 @@ export function ForgotPasswordForm() {
       toast.success('Password reset successfully. You can now login.');
       router.push('/login');
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to reset password')
+    onError: (err: unknown) => toast.error(getAuthErrorMessage(err, 'Failed to reset password'))
   });
 
   return (

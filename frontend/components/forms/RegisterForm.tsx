@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/services/auth.service';
+import { authService, getAuthErrorMessage } from '@/services/auth.service';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -44,12 +44,12 @@ export function RegisterForm() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: authService.register,
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Registration successful. Please verify your email.');
       router.push(`/verify-email?email=${encodeURIComponent(form.getValues('email'))}`);
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Registration failed');
+    onError: (error: unknown) => {
+      toast.error(getAuthErrorMessage(error, 'Registration failed'));
     },
   });
 

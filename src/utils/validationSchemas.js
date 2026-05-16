@@ -9,6 +9,7 @@ export const registerSchema = Joi.object({
 export const loginSchema = Joi.object({
     email: Joi.string().email().required().trim().lowercase(),
     password: Joi.string().required(),
+    totp: Joi.string().length(6).optional(),
 });
 
 export const refreshTokenSchema = Joi.object({

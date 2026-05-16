@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation } from '@tanstack/react-query';
-import { authService } from '@/services/auth.service';
+import { authService, getAuthErrorMessage } from '@/services/auth.service';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -42,8 +42,8 @@ export function ChangePasswordForm() {
       toast.success('Password changed successfully');
       form.reset();
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to change password');
+    onError: (error: unknown) => {
+      toast.error(getAuthErrorMessage(error, 'Failed to change password'));
     },
   });
 

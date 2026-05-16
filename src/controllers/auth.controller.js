@@ -228,9 +228,14 @@ export const profile = async (req, res, next) => {
         }
 
         res.status(200).json({
+            success: true,
             user: {
+                id: user._id,
                 name: user.name,
                 email: user.email,
+                role: user.role,
+                isVerified: user.isVerified,
+                isTwoFactorEnabled: user.isTwoFactorEnabled
             }
         })
     } catch (error) {
@@ -308,6 +313,7 @@ export const forgetPassword = async (req, res, next) => {
         user.otp = otp;
 
         user.otpExpires = Date.now() + 10 * 60 * 1000; // expires after 10 minutes
+        user.otpVerified = false;
 
         await user.save();
 
@@ -336,12 +342,15 @@ export const verifyOTP = async (req, res, next) => {
 
         if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
 
-            return res.status(200).json({
+            return res.status(400).json({
                 success: false,
                 message: " Invalid or expired otp"
 
             })
         }
+
+        user.otpVerified = true;
+        await user.save();
 
         res.status(200).json({
             success: true,
@@ -407,9 +416,17 @@ export const resetPassword = async (req, res, next) => {
             })
         }
 
+        if (!user.otpVerified || !user.otpExpires || user.otpExpires < Date.now()) {
+            return res.status(400).json({
+                success: false,
+                message: "Please verify a valid OTP before resetting password"
+            })
+        }
+
         user.password = newPassword;
         user.otp = null;
         user.otpExpires = null;
+        user.otpVerified = false;
         await user.save();
 
         res.status(200).json({

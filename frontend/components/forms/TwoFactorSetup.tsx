@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { authService } from '@/services/auth.service';
+import { authService, getAuthErrorMessage } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
@@ -45,7 +45,7 @@ export function TwoFactorSetup() {
       setQrCode(data.qrCode);
       toast.success('Scan the QR code with your authenticator app');
     },
-    onError: (error: any) => toast.error(error.response?.data?.message || 'Failed to setup 2FA'),
+    onError: (error: unknown) => toast.error(getAuthErrorMessage(error, 'Failed to setup 2FA')),
   });
 
   const verifyMutation = useMutation({
@@ -55,7 +55,7 @@ export function TwoFactorSetup() {
       setQrCode(null);
       if (user) setUser({ ...user, isTwoFactorEnabled: true });
     },
-    onError: (error: any) => toast.error(error.response?.data?.message || 'Invalid token'),
+    onError: (error: unknown) => toast.error(getAuthErrorMessage(error, 'Invalid token')),
   });
 
   const disableMutation = useMutation({
@@ -64,7 +64,7 @@ export function TwoFactorSetup() {
       toast.success('2FA disabled successfully');
       if (user) setUser({ ...user, isTwoFactorEnabled: false });
     },
-    onError: (error: any) => toast.error(error.response?.data?.message || 'Failed to disable 2FA'),
+    onError: (error: unknown) => toast.error(getAuthErrorMessage(error, 'Failed to disable 2FA')),
   });
 
   if (user?.isTwoFactorEnabled) {

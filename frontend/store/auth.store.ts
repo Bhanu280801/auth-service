@@ -2,11 +2,11 @@ import { create } from 'zustand';
 import Cookies from 'js-cookie';
 
 interface User {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   role: string;
-  isEmailVerified: boolean;
+  isVerified: boolean;
   isTwoFactorEnabled: boolean;
 }
 

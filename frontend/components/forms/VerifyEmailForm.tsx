@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { authService } from '@/services/auth.service';
+import { authService, getAuthErrorMessage } from '@/services/auth.service';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -47,8 +47,8 @@ export function VerifyEmailForm() {
       toast.success('Email verified successfully. You can now log in.');
       router.push('/login');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Verification failed');
+    onError: (error: unknown) => {
+      toast.error(getAuthErrorMessage(error, 'Verification failed'));
     },
   });
 
