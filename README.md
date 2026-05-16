@@ -303,6 +303,15 @@ GOOGLE_CLIENT_ID=your_google_oauth_client_id
 GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
 ```
 
+For deployments on Render free services, use an HTTPS email API instead of SMTP:
+
+```env
+RESEND_API_KEY=your_resend_api_key
+EMAIL_FROM="Auth Service <onboarding@resend.dev>"
+```
+
+Gmail SMTP can work locally, but Render free services block outbound SMTP ports used by Gmail.
+
 Start the backend:
 
 ```bash
@@ -395,6 +404,13 @@ EMAIL_USER=your_email_address
 EMAIL_PASS=your_email_app_password
 GOOGLE_CLIENT_ID=your_google_oauth_client_id
 GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
+```
+
+For Render free services, set these instead of relying on Gmail SMTP:
+
+```env
+RESEND_API_KEY=your_resend_api_key
+EMAIL_FROM="Auth Service <onboarding@resend.dev>"
 ```
 
 ### Frontend on Vercel
