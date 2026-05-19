@@ -26,6 +26,10 @@ const emailSchema = z.object({ email: z.string().email('Invalid email address') 
 const otpSchema = z.object({ otp: z.string().length(6, 'OTP must be 6 characters') });
 const resetSchema = z.object({ password: z.string().min(6, 'Password must be at least 6 characters') });
 
+interface ForgotPasswordResponse {
+  devOtp?: string;
+}
+
 export function ForgotPasswordForm() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -37,10 +41,13 @@ export function ForgotPasswordForm() {
 
   const forgotMutation = useMutation({
     mutationFn: authService.forgotPassword,
-    onSuccess: (_, variables) => {
+    onSuccess: (data: ForgotPasswordResponse, variables) => {
       setEmail(variables.email);
+      if (data.devOtp) {
+        otpForm.setValue('otp', data.devOtp);
+      }
       setStep(2);
-      toast.success('OTP sent to your email');
+      toast.success(data.devOtp ? `Dev OTP: ${data.devOtp}` : 'OTP sent to your email');
     },
     onError: (err: unknown) => toast.error(getAuthErrorMessage(err, 'Failed to send OTP'))
   });

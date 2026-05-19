@@ -332,15 +332,29 @@ export const forgetPassword = async (req, res, next) => {
 
         await user.save();
 
-        await sendEmail(
-            email,
-            "Password Reset OTP",
-            `Your OTP is ${otp}. It is valid for 10 minutes.`
-        )
+        let devOtp;
+
+        try {
+            await sendEmail(
+                email,
+                "Password Reset OTP",
+                `Your OTP is ${otp}. It is valid for 10 minutes.`
+            )
+        } catch (emailError) {
+            const requireEmailDelivery = process.env.NODE_ENV === 'production' || process.env.EMAIL_DELIVERY_REQUIRED === 'true';
+
+            if (requireEmailDelivery) {
+                throw emailError;
+            }
+
+            console.warn("Password reset email delivery failed in development:", emailError.message);
+            devOtp = otp;
+        }
 
         res.status(200).json({
             success: true,
             message: "OTP sent to email",
+            ...(devOtp && { devOtp }),
         });
     } catch (error) {
         next(error)
