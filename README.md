@@ -348,7 +348,7 @@ npm install
 Create `frontend/.env` for local development:
 
 ```env
-process.env.NEXT_PUBLIC_API_PROXY_URL=http://localhost:5000/api
+process.env.NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
 Start the frontend:
@@ -442,7 +442,7 @@ Install Command: npm install
 Set this Vercel environment variable:
 
 ```env
-process.env.NEXT_PUBLIC_API_PROXY_URL=https://auth-microservice-5ki0.onrender.com/api
+process.env.NEXT_PUBLIC_API_URL=https://auth-microservice-5ki0.onrender.com/api
 ```
 
 Do not use `localhost` in Vercel.
@@ -452,13 +452,13 @@ Do not use `localhost` in Vercel.
 Local frontend:
 
 ```env
-process.env.NEXT_PUBLIC_API_PROXY_URL=http://localhost:5000/api
+process.env.NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
 Vercel frontend:
 
 ```env
-process.env.NEXT_PUBLIC_API_PROXY_URL=https://auth-microservice-5ki0.onrender.com/api
+process.env.NEXT_PUBLIC_API_URL=https://auth-microservice-5ki0.onrender.com/api
 ```
 
 Same key, different value. Local points to your local backend. Vercel points to the deployed backend.
