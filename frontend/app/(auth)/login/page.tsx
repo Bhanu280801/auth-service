@@ -1,6 +1,7 @@
 import { LoginForm } from '@/components/forms/LoginForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 export default function LoginPage() {
   return (
@@ -13,7 +14,9 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <LoginForm />
+          <Suspense fallback={<div className="h-40 flex items-center justify-center">Loading...</div>}>
+            <LoginForm />
+          </Suspense>
           <div className="text-sm text-center text-muted-foreground flex flex-col space-y-2">
             <Link href="/forgot-password" className="hover:text-primary underline underline-offset-4">
               Forgot your password?

@@ -15,6 +15,23 @@ interface ApiErrorBody {
   require2FA?: boolean;
 }
 
+export interface BlacklistedToken {
+  token: string;
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface AdminUser {
+  _id: string;
+  name: string;
+  email: string;
+  role: 'user' | 'admin';
+  isVerified: boolean;
+  isTwoFactorEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface RegisterPayload {
   name: string;
   email: string;
@@ -115,6 +132,32 @@ export const authService = {
 
   async resetPassword(data: ResetPasswordPayload) {
     const response = await api.post('/auth/reset-password', data);
+    return response.data;
+  },
+
+  // ── Admin endpoints ──────────────────────────────────────────────
+  async getAdminDashboard() {
+    const response = await api.get('/auth/admin/dashboard');
+    return response.data;
+  },
+
+  async getBlacklist(): Promise<{ success: boolean; data: BlacklistedToken[] }> {
+    const response = await api.get('/auth/admin/blacklist');
+    return response.data;
+  },
+
+  async getAdminUsers(): Promise<{ success: boolean; data: AdminUser[] }> {
+    const response = await api.get('/auth/admin/users');
+    return response.data;
+  },
+
+  async updateUserRole(userId: string, role: 'user' | 'admin'): Promise<{ success: boolean; message: string; data: AdminUser }> {
+    const response = await api.patch(`/auth/admin/users/${userId}/role`, { role });
+    return response.data;
+  },
+
+  async deleteUser(userId: string): Promise<{ success: boolean; message: string }> {
+    const response = await api.delete(`/auth/admin/users/${userId}`);
     return response.data;
   },
 };

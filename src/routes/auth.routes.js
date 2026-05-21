@@ -297,24 +297,23 @@ router.get('/google/callback',
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     });
 
-    // Redirect to frontend (in production, use a frontend URL)
-    // For now, we just return JSON or redirect to a success page
-    res.status(200).json({
-      success: true,
-      message: "Google Login Successful",
-      accessToken,
-      refreshToken
-    });
+    // Redirect to frontend (Render/Vercel or localhost)
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/login?token=${accessToken}&refreshToken=${refreshToken}`);
   }
 );
 
+// Admin dashboard
 router.get('/admin/dashboard', protect, authorizeRoles(Roles.ADMIN), (req, res) => {
+  res.status(200).json({ success: true, message: "Welcome admin" });
+});
 
-  res.status(200).json({
-    success: true,
-    message: "Welcome admin"
-  })
-})
+// Admin endpoints
+import { getBlacklist, getUsers, updateUserRole, deleteUser } from '../controllers/admin.controller.js';
+router.get('/admin/blacklist', protect, authorizeRoles(Roles.ADMIN), getBlacklist);
+router.get('/admin/users', protect, authorizeRoles(Roles.ADMIN), getUsers);
+router.patch('/admin/users/:id/role', protect, authorizeRoles(Roles.ADMIN), updateUserRole);
+router.delete('/admin/users/:id', protect, authorizeRoles(Roles.ADMIN), deleteUser);
 
 /**
  * @swagger
