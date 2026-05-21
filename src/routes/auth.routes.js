@@ -1,13 +1,4 @@
-/**
- * @swagger
- * tags:
- *   name: Auth
- *   description: Authentication and Authorization APIs
- */
-
-
 import express from 'express'
-
 import {
   loginUser,
   registerUser,
@@ -39,365 +30,81 @@ import {
   resetPasswordSchema,
   changePasswordSchema
 } from '../utils/validationSchemas.js';
+import { getBlacklist, getUsers, updateUserRole, deleteUser } from '../controllers/admin.controller.js';
 
 const router = express.Router();
 
-/**
- * @swagger
- * /api/auth/register:
- *   post:
- *     summary: Register a new user
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - email
- *               - password
- *             properties:
- *               name:
- *                 type: string
- *                 example: Bhanu
- *               email:
- *                 type: string
- *                 example: bhanu@gmail.com
- *               password:
- *                 type: string
- *                 example: password123
- *     responses:
- *       201:
- *         description: User registered successfully
- */
+// ─── Public Routes ────────────────────────────────────────────────────────────
 router.post("/register", validate(registerSchema), registerUser);
-
-/**
- * @swagger
- * /api/auth/verify-email:
- *   post:
- *     summary: Verify email address
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - otp
- *             properties:
- *               email:
- *                 type: string
- *               otp:
- *                 type: string
- *     responses:
- *       200:
- *         description: Email verified successfully
- */
 router.post("/verify-email", validate(verifyEmailSchema), verifyEmail);
+router.post("/login", loginRateLimitter, validate(loginSchema), loginUser);
+router.post('/refresh-token', validate(refreshTokenSchema), refreshAccessToken);
+router.post('/forgot-password', validate(forgotPasswordSchema), forgetPassword);
+router.post('/verify-otp', validate(verifyOtpSchema), verifyOTP);
+router.post('/reset-password', validate(resetPasswordSchema), resetPassword);
 
-
-
-/**
- * @swagger
- * /api/auth/login:
- *   post:
- *     summary: Login user and return JWT tokens
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 example: bhanu@gmail.com
- *               password:
- *                 type: string
- *                 example: password123
- *     responses:
- *       200:
- *         description: Login successful
- */
-
-router.post("/login", loginRateLimitter, validate(loginSchema), loginUser)
-
-/**
- * @swagger
- * /api/auth/refresh-token:
- *   post:
- *     summary: Generate a new access token using refresh token
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - refreshToken
- *             properties:
- *               refreshToken:
- *                 type: string
- *                 example: your_refresh_token_here
- *     responses:
- *       200:
- *         description: New access token generated
- */
-
-router.post('/refresh-token', validate(refreshTokenSchema), refreshAccessToken)
-
-/**
- * @swagger
- * /api/auth/profile:
- *   get:
- *     summary: Get logged-in user's profile (Protected)
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Profile fetched successfully
- *       401:
- *         description: Unauthorized
- */
-
-router.get('/profile', protect, profile)
-
-/**
- * @swagger
- * /api/auth/logout:
- *   post:
- *     summary: Logout user by blacklisting token
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Logged out successfully
- */
-
-router.post('/logout', protect, logoutUser)
-
-/**
- * @swagger
- * /api/auth/change-password:
- *   post:
- *     summary: Change user password
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - oldPassword
- *               - newPassword
- *             properties:
- *               oldPassword:
- *                 type: string
- *               newPassword:
- *                 type: string
- *     responses:
- *       200:
- *         description: Password changed successfully
- */
+// ─── Protected Routes ─────────────────────────────────────────────────────────
+router.get('/profile', protect, profile);
+router.post('/logout', protect, logoutUser);
 router.post('/change-password', protect, validate(changePasswordSchema), changePassword);
 
-/**
- * @swagger
- * /api/auth/2fa/setup:
- *   post:
- *     summary: Setup 2FA (Returns QR Code)
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: QR Code generated
- */
+// ─── 2FA Routes ───────────────────────────────────────────────────────────────
 router.post('/2fa/setup', protect, setup2FA);
-
-/**
- * @swagger
- * /api/auth/2fa/verify:
- *   post:
- *     summary: Verify 2FA token to enable it
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - token
- *             properties:
- *               token:
- *                 type: string
- *     responses:
- *       200:
- *         description: 2FA enabled successfully
- */
 router.post('/2fa/verify', protect, verify2FA);
-
-/**
- * @swagger
- * /api/auth/2fa/disable:
- *   post:
- *     summary: Disable 2FA
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - token
- *             properties:
- *               token:
- *                 type: string
- *     responses:
- *       200:
- *         description: 2FA disabled successfully
- */
 router.post('/2fa/disable', protect, disable2FA);
 
-// Google Auth Routes
+// ─── Google OAuth Routes ──────────────────────────────────────────────────────
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login', session: false }),
+router.get(
+  '/google/callback',
+  passport.authenticate('google', {
+    // ✅ was '/login' (backend route), now points to frontend
+    failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_auth_failed`,
+    session: false,
+  }),
   async (req, res) => {
-    // Generate tokens
-    const accessToken = generateAccessToken(req.user);
-    const refreshToken = generateRefreshToken(req.user);
+    try {
+      // ✅ Safety guard
+      if (!req.user) {
+        return res.redirect(
+          `${process.env.FRONTEND_URL}/login?error=no_user`
+        );
+      }
 
-    // Store refresh token
-    await RefreshToken.create({
-      token: refreshToken,
-      user: req.user._id,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    });
+      // req.user here is the full Mongoose document from Passport
+      // so req.user._id exists and is a valid ObjectId ✅
+      const accessToken = generateAccessToken(req.user);
+      const refreshToken = generateRefreshToken(req.user);
 
-    // Redirect to frontend (Render/Vercel or localhost)
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/login?token=${accessToken}&refreshToken=${refreshToken}`);
+      // ✅ Persist refresh token
+      await RefreshToken.create({
+        token: refreshToken,
+        user: req.user._id,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(
+        `${frontendUrl}/login?token=${accessToken}&refreshToken=${refreshToken}`
+      );
+
+    } catch (error) {
+      // ✅ Catches token generation or DB errors — was completely unhandled before
+      console.error('Google OAuth callback error:', error.message);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=server_error`);
+    }
   }
 );
 
-// Admin dashboard
+// ─── Admin Routes ─────────────────────────────────────────────────────────────
 router.get('/admin/dashboard', protect, authorizeRoles(Roles.ADMIN), (req, res) => {
-  res.status(200).json({ success: true, message: "Welcome admin" });
+  res.status(200).json({ success: true, message: 'Welcome admin' });
 });
-
-// Admin endpoints
-import { getBlacklist, getUsers, updateUserRole, deleteUser } from '../controllers/admin.controller.js';
 router.get('/admin/blacklist', protect, authorizeRoles(Roles.ADMIN), getBlacklist);
 router.get('/admin/users', protect, authorizeRoles(Roles.ADMIN), getUsers);
 router.patch('/admin/users/:id/role', protect, authorizeRoles(Roles.ADMIN), updateUserRole);
 router.delete('/admin/users/:id', protect, authorizeRoles(Roles.ADMIN), deleteUser);
 
-/**
- * @swagger
- * /api/auth/forgot-password:
- *   post:
- *     summary: Send OTP to email for password reset
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *             properties:
- *               email:
- *                 type: string
- *                 example: bhanu@gmail.com
- *     responses:
- *       200:
- *         description: OTP sent successfully
- */
-
-router.post('/forgot-password', validate(forgotPasswordSchema), forgetPassword)
-
-/**
- * @swagger
- * /api/auth/verify-otp:
- *   post:
- *     summary: Verify OTP for password reset
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - otp
- *             properties:
- *               email:
- *                 type: string
- *                 example: bhanu@gmail.com
- *               otp:
- *                 type: string
- *                 example: 123456
- *     responses:
- *       200:
- *         description: OTP verified successfully
- */
-
-router.post('/verify-otp', validate(verifyOtpSchema), verifyOTP);
-
-/**
- * @swagger
- * /api/auth/reset-password:
- *   post:
- *     summary: Reset password after OTP verification
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - newPassword
- *             properties:
- *               email:
- *                 type: string
- *                 example: bhanu@gmail.com
- *               newPassword:
- *                 type: string
- *                 example: NewPassword123
- *     responses:
- *       200:
- *         description: Password reset successful
- */
-
-router.post('/reset-password', validate(resetPasswordSchema), resetPassword);
-
-//http://localhost:5000/api-docs/#/Auth/post_api_auth_register
-
-export default router
+export default router;
