@@ -27,7 +27,7 @@ export const protect = async (req, res, next) => {
     const decoded = verifyAccessToken(token);
 
     req.user = {
-     id: decoded.id,
+     _id: decoded.id,
       role: decoded.role,
     };
 
